@@ -1,0 +1,13 @@
+---
+# All hosts
+- hosts: all
+  become: true  #sudo
+  tasks:
+
+  - name: install apache and php package 
+    package:  # Generic OS package manager
+      name: 
+        - "{{ apache_package  }}"       # Variable, can be defined in inventory file
+        - "{{ php_package }}"  # Variable, can be defined in inventory file
+      state: latest
+      update_cache: yes

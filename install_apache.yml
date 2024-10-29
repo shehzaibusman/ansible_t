@@ -5,34 +5,23 @@
   tasks:
 
     ########## Ubuntu  ############
-  - name: update repository index
+  - name: install apache2 and php package and update cache for Ubuntu 
     apt:
-      update_cache: yes
-    when: ansible_distribution == "Ubuntu"
-
-  - name: install apache2 package #discription of task
-    apt:
-      name: apache2
-      # We can navigate to the default webpage now in our browser by typing in the target ip.
+      name: 
+        - apache2
+        - libapache2-mod-php
       state: latest
+      update_cache: yes
     when: ansible_distribution in [ "Debian", "Ubuntu" ]
 
-  - name: add php support for apache
-    apt:
-      name: libapache2-mod-php
-      state: latest
-    when: ansible_distribution == "Ubuntu"
-
     ########## Centos ############
-  - name: update repository index
+  - name: install httpd and php package and update cache for Centos
     yum:
-      update_cache: yes
-    when: ansible_distribution == "CentOS"
-
-  - name: install apache2 package 
-    yum:
-      name: httpd
+      name: 
+        - httpd
+        - php
       state: latest
+      update_cache: yes
     when: ansible_distribution == "CentOS"
 
   - name: start httpd service (centos doesn't start it by default) 
@@ -40,10 +29,4 @@
       name: httpd
       state: started
       enabled: yes
-    when: ansible_distribution == "CentOS"
-
-  - name: add php support for apache
-    yum:
-      name: php
-      state: latest
     when: ansible_distribution == "CentOS"
