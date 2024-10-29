@@ -1,0 +1,5 @@
+- name: add ssh key for simone
+  tags: always
+  authorized_key:
+    user: simone
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8U9Fq9YXjp0NFzpqm/AKqYnednFxyxIAn/lsnYoIiKWx7CpfoEbetFGqY4CQS22P1oM/bGa28yOrkR0PLS4FeRx+SLSkgsIw+sWRxhzvXpz3fBRy46m3tz1ea4ckTbCgjLeUxdj3cruxyj5Yr+Tj8gq9ZleXrTDuC+OKWPqkdLtL/XYMz6Bby8q71rDiFQoTfg/MUhn0jxx+xbg16Z9B3/63Ae8Sawj9roH+No8JDUZFYA8KsJqaLPD7HgWcsjesU3HqqtBg6FK+3y7NFt6FscoZZifjI7TpH+nmBA1emcT+9IrSKQ4ISw7T0bfP0dBDx9r2rSARDmQ9u0AiOOzkt ansible"

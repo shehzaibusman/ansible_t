@@ -1,0 +1,125 @@
+---
+
+- hosts: all
+  become: true  #sudo
+  pre_tasks:  # pre_tasks mandates that these tasks run 1st.  won't affect this because this is from top to bottom.
+
+  - name: update repo cache (CentOS)
+    yum:
+      update_cache: yes
+    changed_when: false  # consider this not a change when cache is updated
+    when: ansible_distribution == "CentOS"
+
+  - name: update repo cache (Ubuntu)
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: add ssh key for simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8U9Fq9YXjp0NFzpqm/AKqYnednFxyxIAn/lsnYoIiKWx7CpfoEbetFGqY4CQS22P1oM/bGa28yOrkR0PLS4FeRx+SLSkgsIw+sWRxhzvXpz3fBRy46m3tz1ea4ckTbCgjLeUxdj3cruxyj5Yr+Tj8gq9ZleXrTDuC+OKWPqkdLtL/XYMz6Bby8q71rDiFQoTfg/MUhn0jxx+xbg16Z9B3/63Ae8Sawj9roH+No8JDUZFYA8KsJqaLPD7HgWcsjesU3HqqtBg6FK+3y7NFt6FscoZZifjI7TpH+nmBA1emcT+9IrSKQ4ISw7T0bfP0dBDx9r2rSARDmQ9u0AiOOzkt ansible"
+
+- hosts: workstations
+  become: true
+  tasks:
+  - name: install unzip
+    package: 
+      name: unzip
+
+  - name: install terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache2 and php package and update cache for Ubuntu 
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution in [ "Debian", "Ubuntu" ]
+
+  - name: install httpd and php package and update cache for Centos
+    yum:
+      name: 
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+# Change a line in a file
+  - name: Change e-mail address for admin
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin sombody@somewhere.net
+    when: ansible_distribution == "CentOS"
+    register: httpd_variable
+
+# Perform only if the registered httpd_variable is changed
+  - name: Restart httpd service (CentOS)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: restarted
+    when: httpd_variable.changed
+
+# Perform action on service
+  - name: start httpd service (centos doesn't start it by default) 
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "CentOS"
+
+# Copy desired  file in files directory (ansible knows directory 'files' by default)
+  - name: copy default html file for site
+    tags: apache, apache2, httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name:  install mariadb package (CentOS)
+    yum:
+      name: mariadb
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name:  install mariadb package (Ubuntu)
+    apt:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name:  install samba apackage
+    package:
+      name: samba
+      state: latest
