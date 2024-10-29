@@ -1,0 +1,19 @@
+---
+# All hosts
+- hosts: all
+  become: true  #sudo
+  tasks:
+
+  - name: update repository index
+    apt:
+      update_cache: yes
+
+  - name: removel apache2 package #discription of task
+    apt:
+      name: apache2
+      state: absent
+
+  - name: remove php support for apache
+    apt:
+      name: libapache2-mod-php
+      state: absent
