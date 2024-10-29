@@ -53,13 +53,34 @@
       state: latest
     when: ansible_distribution == "CentOS"
 
+# Change a line in a file
+  - name: Change e-mail address for admin
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin sombody@somewhere.net
+    when: ansible_distribution == "CentOS"
+    register: httpd_variable
+
+# Perform only if the registered httpd_variable is changed
+  - name: Restart httpd service (CentOS)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: restarted
+    when: httpd_variable.changed
+
+# Perform action on service
   - name: start httpd service (centos doesn't start it by default) 
+    tags: apache,centos,httpd
     service:
       name: httpd
       state: started
       enabled: yes
     when: ansible_distribution == "CentOS"
 
+# Copy desired  file in files directory (ansible knows directory 'files' by default)
   - name: copy default html file for site
     tags: apache, apache2, httpd
     copy:
